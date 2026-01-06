@@ -8,7 +8,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#1e1e1e">
-  <!-- URL CANÓNICA -->
   <link rel="canonical" href="https://tuti-node.netlify.app/">
   <link rel="icon" href="https://i.imgur.com/F9CqhP3.jpeg">
   <meta property="og:title" content="Clase completa de Node.js">
@@ -41,21 +40,30 @@ h1 { margin: 0; font-size: 16px; color: #fff; font-weight: 600; }
 .tab:hover { background: #1e1e1e; color: #ccc; }
 .tab.active { background: #1e1e1e; color: #fff; border-bottom: 2px solid #007acc; }
 .tab i { font-size: 11px; }
+.tab.server { border-bottom-color: #25d366; }
 
 #workspace { flex: 1; display: flex; flex-direction: row; overflow: hidden; min-height:0; }
 #workspace[data-view="editor"] #editor,
 #workspace[data-view="preview"] #preview,
+#workspace[data-view="server"] #serverPreview,
 #workspace[data-view="split"] #editor,
 #workspace[data-view="split"] #preview { min-height:0; }
 
 #workspace[data-view="editor"] #editor { flex: 1; }
-#workspace[data-view="editor"] #preview { display: none; }
+#workspace[data-view="editor"] #preview,
+#workspace[data-view="editor"] #serverPreview { display: none; }
 
 #workspace[data-view="preview"] #preview { flex: 1; }
-#workspace[data-view="preview"] #editor { display: none; }
+#workspace[data-view="preview"] #editor,
+#workspace[data-view="preview"] #serverPreview { display: none; }
+
+#workspace[data-view="server"] #serverPreview { flex: 1; }
+#workspace[data-view="server"] #editor,
+#workspace[data-view="server"] #preview { display: none; }
 
 #workspace[data-view="split"] #editor,
 #workspace[data-view="split"] #preview { flex: 1; display: block; }
+#workspace[data-view="split"] #serverPreview { display: none; }
 
 #workspace[data-view="split"] { flex-direction: row; }
 @media (max-width:768px){
@@ -63,7 +71,7 @@ h1 { margin: 0; font-size: 16px; color: #fff; font-weight: 600; }
 }
 
 #editor { min-height: 0; }
-#preview { border: none; width: 100%; height: 100%; background: #fff; }
+#preview, #serverPreview { border: none; width: 100%; height: 100%; background: #fff; }
 
 #modalLoadHTML { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 9999; }
 #modalLoadHTML .modal-content { background: #1e1e1e; padding:16px; border-radius:8px; width:90%; max-width:700px; display:flex; flex-direction:column; gap:8px;color:white; }
@@ -420,6 +428,8 @@ console.log("🚀 Servidor escuchando en puerto", PORT);
   }
 };
 
+const SERVER_URL = 'https://whatschat-ix08.onrender.com';
+
 function App() {
   const [view, setView] = useState('split');
   const [activeFile, setActiveFile] = useState('index.html');
@@ -428,6 +438,7 @@ function App() {
   const [textareaValue, setTextareaValue] = useState('');
   const editorRef = useRef(null);
   const iframeRef = useRef(null);
+  const serverIframeRef = useRef(null);
 
   const renderPreview = (html) => {
     if (iframeRef.current) iframeRef.current.srcdoc = html;
@@ -513,6 +524,7 @@ function App() {
           React.createElement('button', {onClick:()=>switchView('split')}, React.createElement('i',{className:'fa-solid fa-columns'}), ' Split'),
           React.createElement('button', {onClick:()=>switchView('editor')}, React.createElement('i',{className:'fa-solid fa-code'}), ' Editor'),
           React.createElement('button', {onClick:()=>switchView('preview')}, React.createElement('i',{className:'fa-solid fa-eye'}), ' Preview'),
+          React.createElement('button', {onClick:()=>switchView('server'), style:{background:'#25d366'}}, React.createElement('i',{className:'fa-solid fa-server'}), ' Server'),
           React.createElement('button', {onClick:openModal}, React.createElement('i',{className:'fa-solid fa-file-import'}), ' Cargar')
         )
       ),
@@ -530,7 +542,8 @@ function App() {
       ),
       React.createElement('div', {id:'workspace', 'data-view':view},
         React.createElement('div', {id:'editor'}),
-        React.createElement('iframe', {id:'preview', ref:iframeRef})
+        React.createElement('iframe', {id:'preview', ref:iframeRef}),
+        React.createElement('iframe', {id:'serverPreview', ref:serverIframeRef, src:SERVER_URL})
       ),
       modalOpen && React.createElement('div', {id:'modalLoadHTML', style:{display:'flex'}},
         React.createElement('div', {className:'modal-content'},
